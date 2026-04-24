@@ -1,73 +1,45 @@
-# Project-1-sjosh117 Phase2
+# Streaming Graph Analytics (Kafka + Neo4j + Kubernetes)
 
-This project demonstrates the development of a scalable, real-time graph analytics pipeline using Neo4j, Apache Kafka, Docker, and Kubernetes. It processes NYC Yellow Cab trip data, models it as a graph, and applies graph algorithms like PageRank and Breadth-First Search (BFS).
+This module runs a real-time pipeline that streams NYC taxi events into Neo4j and executes graph analytics on the resulting graph.
 
-## Technologies Used
+## Stack
 
 - Neo4j
-- Apache Kafka
-- Kafka Connect
+- Apache Kafka + Kafka Connect
+- Kubernetes (Minikube)
 - Docker
-- Kubernetes
-- Python 3
+- Python
 
-## Project Structure
-
-- **Phase 1**: Setup of a Neo4j database in Docker, static graph modeling, and running PageRank and BFS algorithms.
-- **Phase 2**: Build of a distributed streaming pipeline using Kubernetes and Kafka, with real-time data ingestion into Neo4j.
-
-## Setup Instructions
+## Quick start
 
 ### Prerequisites
 
 - Docker
-- Minikube (for Kubernetes)
-- kubectl
+- Minikube
+- `kubectl`
 - Python 3.7+
-- Confluent Kafka Python client (`pip install confluent-kafka`)
+- `pip install confluent-kafka`
 
-### Installation Steps
+### Run steps
 
-1. **Clone the repository:**
+```bash
+minikube start --memory=4096 --cpus=4
+kubectl apply -f zookeeper-setup.yaml
+kubectl apply -f kafka-setup.yaml
+kubectl apply -f neo4j-service.yaml
+kubectl apply -f kafka-neo4j-connector.yaml
+kubectl port-forward svc/neo4j-service 7474:7474 7687:7687
+kubectl port-forward svc/kafka-service 9092:9092
+python data_producer.py
+```
 
-  ```bash
-  git clone --single-branch --branch phase-2 https://github.com/your-username/your-repo.git
-  ```
+Open Neo4j Browser at `http://localhost:7474`, then run analytics using:
 
-2. **Start Minikube:**
+- `interface.py`
+- `tester.py`
 
-  ```bash
-  minikube start --memory=4096 --cpus=4
-  ```
+## Outcomes
 
-3. **Deploy Services:**
-
-  ```bash
-  kubectl apply -f zookeeper-setup.yaml
-  kubectl apply -f kafka-setup.yaml
-  kubectl apply -f neo4j-service.yaml
-  kubectl apply -f kafka-neo4j-connector.yaml
-  ```
-
-4. **Port Forward:**
-
-  ```bash
-  kubectl port-forward svc/neo4j-service 7474:7474 7687:7687
-  kubectl port-forward svc/kafka-service 9092:9092
-  ```
-
-5. **Run Data Producer:**
-
-  ```bash
-  python data_producer.py
-  ```
-
-6. **Access Neo4j Browser**: Open http://localhost:7474 and log in using the configured username and password.
-
-7. **Run Graph Algorithms**: Use the `interface.py` and `tester.py` scripts to perform BFS and PageRank on the ingested graph data.
-
-## Results
-
-- Successfully ingested and transformed NYC taxi trip data into a live updating graph.
-- Implemented BFS for shortest path queries.
-- Implemented PageRank to rank locations based on traffic.
+- Event data is ingested continuously into a graph model
+- BFS queries support path and traversal analysis
+- PageRank highlights high-importance nodes/locations
