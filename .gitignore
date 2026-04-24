@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Local environment
+.env
+venv/
+.venv/
+env/
+
+# Logs/temp
+*.log
+tmp/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/

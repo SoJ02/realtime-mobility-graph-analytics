@@ -1,0 +1,24 @@
+neo4j:
+  name: "neo4j-standalone"
+  password: "project1phase2"
+
+  plugins:
+    - https://dist.neo4j.com/neo4j-graph-data-science-2.4.6.zip
+    - apoc
+    - graph-data-science
+
+  # Memory and CPU resources (adjust based on Minikube setup)
+  resources:
+    memory: "4Gi"
+    cpu: "2"
+   
+
+volumes:
+  data:
+    mode: defaultStorageClass
+
+env:  
+  NEO4J_PLUGINS: '["graph-data-science"]'
+
+config:  
+  dbms.security.procedures.unrestricted: "gds.,apoc.,gds.util.*"

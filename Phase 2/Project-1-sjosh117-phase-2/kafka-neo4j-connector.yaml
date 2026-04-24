@@ -1,0 +1,74 @@
+# Specifies the Kubernetes API version being used for this object definition.
+apiVersion: apps/v1
+# Specifies the type of Kubernetes object to create, in this case, a Deployment.
+# Deployments manage stateless applications by ensuring a specified number of replicas (pods) are running.
+kind: Deployment
+# Contains metadata about the Deployment object, like its name and labels.
+metadata:
+  # The unique name for this Deployment within the Kubernetes namespace.
+  name: kafka-neo4j-connector-deployment
+  # Labels are key/value pairs attached to objects, used for selection and organization.
+  # This label helps identify resources related to the kafka-neo4j-connector application.
+  labels:
+    app: kafka-neo4j-connector
+# Defines the desired state of the Deployment.
+spec:
+  # Specifies the desired number of identical Pods that should be running.
+  replicas: 1
+  # Defines how the Deployment finds which Pods to manage.
+  selector:
+    # It matches Pods that have the specified labels.
+    matchLabels:
+      app: kafka-neo4j-connector
+  # Describes the Pods that will be created and managed by this Deployment.
+  template:
+    # Metadata for the Pods created by this template.
+    metadata:
+      # Labels applied to each Pod created by this Deployment.
+      # These must match the Deployment's selector (`spec.selector.matchLabels`).
+      labels:
+        app: kafka-neo4j-connector
+    # Specification of the Pod's contents (containers, volumes, etc.).
+    spec:
+      # List of containers belonging to the Pod.
+      containers:
+        # Defines a single container within the Pod.
+        - name: kafka-neo4j-connector # Name of the container.
+          # Specifies the Docker image to use for this container.
+          # This image contains Kafka Connect with the Neo4j Sink connector pre-installed.
+          image: roy012299/kafka-neo4j-connect
+          # Defines when the image should be pulled.
+          # IfNotPresent: Pull the image only if it's not already present locally on the node.
+          imagePullPolicy: IfNotPresent
+          # List of network ports exposed by the container.
+          ports:
+            # Exposes port 8083, the default port for the Kafka Connect REST API.
+            - containerPort: 8083
+          # List of environment variables to set in the container.
+          # These configure the Kafka Connect worker.
+          env:
+            # Specifies the initial list of Kafka broker addresses the Connect worker should use for bootstrapping.
+            - name: CONNECT_BOOTSTRAP_SERVERS
+              # Points to the Kubernetes service name (`kafka-service`) and internal port (`29092`) for Kafka brokers.
+              # This internal listener must be configured in your Kafka setup[cite: 66].
+              value: "kafka-service:29092"
+            # Sets the port on which the Kafka Connect REST API will listen inside the container.
+            - name: CONNECT_REST_PORT
+              # Matches the containerPort defined above.
+              value: "8083"
+            # A unique ID for the Kafka Connect cluster group this worker belongs to.
+            # Workers in the same group share connector configurations and task assignments.
+            - name: CONNECT_GROUP_ID
+              value: "neo4j-sink-group"
+            # The name of the Kafka topic where connector configurations are stored.
+            # This topic must exist or be auto-created by Kafka.
+            - name: CONNECT_CONFIG_STORAGE_TOPIC
+              value: "connect-configs"
+            # The name of the Kafka topic where connector offsets (progress) are stored.
+            # This topic must exist or be auto-created by Kafka.
+            - name: CONNECT_OFFSET_STORAGE_TOPIC
+              value: "connect-offsets"
+            # The name of the Kafka topic where connector status updates are stored.
+            # This topic must exist or be auto-created by Kafka.
+            - name: CONNECT_STATUS_STORAGE_TOPIC
+              value: "connect-status"

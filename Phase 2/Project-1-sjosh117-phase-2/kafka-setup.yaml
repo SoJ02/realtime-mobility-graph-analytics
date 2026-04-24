@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  labels:
+    app: kafka
+spec:
+  selector:
+    app: kafka
+  ports:
+    - name: external      # Port for external access (via port-forward or LoadBalancer)
+      protocol: TCP
+      port: 9092
+      targetPort: 9092
+    - name: internal      # Port for internal communication within Kubernetes
+      protocol: TCP
+      port: 29092
+      targetPort: 29092
+---
+# Required Kafka Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-deployment
+  labels:
+    app: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.3.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9092   # External listener port
+            - containerPort: 29092  # Internal listener port
+          env:
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper-service:2181" # Points to the Zookeeper service
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              # Points to localhost via port-forward and internal service
+              value: "PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka-service:29092" 
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1" # For single-node cluster
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1" # For single-node cluster
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1" # For single-node cluster
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+          resources:
+            limits:
+              memory: "1500Mi" # Increased memory slightly for Kafka
+              cpu: "1000m"
