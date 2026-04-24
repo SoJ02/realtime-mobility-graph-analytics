@@ -51,7 +51,7 @@ Trip Producer -> Kafka -> Neo4j Connector -> Neo4j Graph
 ## Repository Map
 
 - `Phase 1/` - batch setup, data loading, and local analytics scripts
-- `Phase 2/Project-1-sjosh117-phase-2/` - K8s manifests + producer + analytics scripts
+- `Phase 2/streaming-pipeline/` - K8s manifests + producer + analytics scripts
 - `README.md` (this file) - top-level architecture and runbook
 
 ## End-to-End Runbook
@@ -59,7 +59,7 @@ Trip Producer -> Kafka -> Neo4j Connector -> Neo4j Graph
 ### Option A: Streaming deployment (recommended)
 
 ```bash
-cd "Phase 2/Project-1-sjosh117-phase-2"
+cd "Phase 2/streaming-pipeline"
 minikube start --memory=4096 --cpus=4
 kubectl apply -f zookeeper-setup.yaml
 kubectl apply -f kafka-setup.yaml
